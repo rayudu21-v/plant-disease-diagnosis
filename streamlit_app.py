@@ -3,6 +3,7 @@ from ultralytics import YOLO
 from PIL import Image
 import tempfile
 import os
+os.environ["TORCH_HOME"] = "/tmp/torch"
 from datetime import datetime
 
 # ============================================================
@@ -26,12 +27,19 @@ MODEL_PATH = os.path.join(BASE_DIR, "yolov8_plantvillage_model.pt")
 if not os.path.exists(MODEL_PATH):
     st.error("❌ yolov8_plantvillage_model.pt not found in project folder")
     st.stop()
-
-@st.cache_resource
+@st.cache_resource(show_spinner="🔄 Loading AI model...")
 def load_model():
-    return YOLO(MODEL_PATH)
+    try:
+        model = YOLO(MODEL_PATH)
+        return model
+    except Exception as e:
+        st.error("❌ Model failed to load")
+        st.exception(e)
+        st.stop()
 
 model = load_model()
+
+
 
 # ============================================================
 # UNIPROT + AMINO ACID DATABASE (38 CLASSES)
@@ -531,4 +539,5 @@ else:
     st.markdown("### Instructions:")
     st.write("1. Upload a clear image of the plant leaf")
     st.write("2. Click the 'Diagnose' button")
+
     st.write("3. View detailed diagnosis and recommendations")
